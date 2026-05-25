@@ -8,6 +8,7 @@ const config = {
   database: env.DATABASE_URL as string,
   jwtSecret: (env.JWT_SECRET || "fallback_super_secret_key_123!") as string,
   jwtExpiresIn: (env.JWT_EXPIRES_IN || "1d") as string,
+  bcryptSaltRounds: Number(env.BCRYPT_SALT_ROUNDS),
 };
 
 export default config;

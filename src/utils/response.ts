@@ -1,13 +1,19 @@
-import { type Response } from "express";
+import type { Response } from "express";
 
-export const sendSuccess = (
+const sendResponse = (
   res: Response,
   statusCode: number,
-  message: string | null,
-  data?: any,
+  success: boolean,
+  message: string,
+  data?: unknown,
+  errors?: unknown,
 ) => {
-  const responsePayload: any = { success: true };
-  if (message !== null) responsePayload.message = message;
-  responsePayload.data = data;
-  return res.status(statusCode).json(responsePayload);
+  res.status(statusCode).json({
+    success,
+    message,
+    data,
+    errors,
+  });
 };
+
+export default sendResponse;

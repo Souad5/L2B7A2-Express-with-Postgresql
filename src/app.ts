@@ -3,24 +3,30 @@ import express, {
   type Request,
   type Response,
 } from "express";
-import { globalErrorHandler } from "./middleware/error.middleware";
-import { authRoutes } from "./modules/auth/auth.route";
-import { issueRoutes } from "./modules/issues/issues.route";
+import cors from "cors";
+
+import authRoutes from "./modules/auth/auth.route";
+import issueRoutes from "./modules/issues/issue.route";
+import globalErrorHandler from "./middleware/error.middleware";
 
 const app: Application = express();
 
-// Standard parsers
+app.use(
+  cors({
+    origin: "http://localhost:5000",
+  }),
+);
+
 app.use(express.json());
 
-// Mapping endpoint configurations explicitly
-app.use("/api/auth", authRoutes);
-app.use("/api/issues", issueRoutes);
-
 app.get("/", (req: Request, res: Response) => {
-  res.send("DevPulse Internal Engine Live.");
+  res.send("DevPulse API Running");
 });
 
-// Post processing Global Exception Middleware Layer
+app.use("/api/auth", authRoutes);
+
+app.use("/api/issues", issueRoutes);
+
 app.use(globalErrorHandler);
 
 export default app;

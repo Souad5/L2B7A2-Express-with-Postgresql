@@ -1,46 +1,31 @@
-import type { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { AppError } from "../utils/AppError";
-import type { JWTPayload } from "../types";
-import config from "../config";
+import type { NextFunction, Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import sendResponse from "../utils/response";
+import { verifyToken } from "../utils/jwt";
 
-export const authenticate = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return next(new AppError(401, "Missing authorization token"));
-  }
-
-  // Expect standard parsing or clean token input directly matching spec rule
-  const token = authHeader.startsWith("Bearer ")
-    ? authHeader.split(" ")[1]
-    : authHeader;
-
+const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const decoded = jwt.verify(token, config.jwtSecret) as JWTPayload;
+    const token = req.headers.authorization;
+
+    if (!token) {
+      sendResponse(res, StatusCodes.UNAUTHORIZED, false, "Unauthorized access");
+
+      return;
+    }
+
+    const decoded = verifyToken(token);
+
     req.user = decoded;
+
     next();
   } catch (error) {
-    return next(new AppError(401, "Invalid or expired authorization token"));
+    sendResponse(
+      res,
+      StatusCodes.UNAUTHORIZED,
+      false,
+      "Invalid or expired token",
+    );
   }
 };
 
-export const authorize = (...allowedRoles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return next(new AppError(401, "Authentication required"));
-    }
-
-    if (!allowedRoles.includes(req.user.role)) {
-      return next(
-        new AppError(403, "Forbidden: Insufficient system permissions"),
-      );
-    }
-
-    next();
-  };
-};
+export default authMiddleware;

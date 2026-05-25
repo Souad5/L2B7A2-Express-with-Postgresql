@@ -3,12 +3,15 @@ import config from "./config";
 import { initDb } from "./db";
 
 const main = async () => {
-  // Safe async DB seeding
-  await initDb();
+  try {
+    await initDb();
 
-  app.listen(config.port, () => {
-    console.log(`Server is running on port ${config.port}`);
-  });
+    app.listen(config.port, () => {
+      console.log(`Server is running on port ${config.port}`);
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 main();
